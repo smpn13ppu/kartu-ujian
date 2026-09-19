@@ -58,7 +58,7 @@ export const SettingsStep: React.FC<SettingsStepProps> = ({ settings, onChange, 
               type="text"
               value={settings.namaSekolah}
               onChange={(e) => onChange({ namaSekolah: e.target.value })}
-              placeholder="Contoh: SMA NEGERI 1 NUSANTARA"
+              placeholder="Contoh: SMP NEGERI 13 PENAJAM PASER UTARA"
               className="w-full px-3.5 py-2.5 text-sm bg-slate-50/50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all font-semibold"
             />
           </div>

@@ -62,7 +62,7 @@ export const DEFAULT_STEMPEL = `data:image/svg+xml;utf8,${encodeURIComponent(`
   
   <text fill="#4338ca" font-family="sans-serif" font-size="9" font-weight="900" letter-spacing="1.2" opacity="0.88">
     <textPath href="#curveBottom" startOffset="50%" text-anchor="middle">
-      SMAN 1 NUSANTARA
+      SMPN 13 PPU
     </textPath>
   </text>
 
@@ -80,9 +80,9 @@ export const DEFAULT_STEMPEL = `data:image/svg+xml;utf8,${encodeURIComponent(`
 `)}`;
 
 export const DEFAULT_SCHOOL_SETTINGS: SchoolSettings = {
-  namaSekolah: 'SMA NEGERI 1 NUSANTARA',
+  namaSekolah: 'SMP NEGERI 13 PENAJAM PASER UTARA',
   subHeader: 'KARTU PESERTA PENILAIAN AKHIR SEMESTER (PAS) GANJIL\nTAHUN AJARAN 2026/2027',
-  alamatSekolah: 'Jl. Pendidikan No. 45, Kota Cendekia | Website: www.sman1nusantara.sch.id',
+  alamatSekolah: 'Jl. Penajam Paser Utara, Kalimantan Timur | NPSN: 30402061',
   logoKiri: DEFAULT_LOGO_KIRI,
   logoKanan: DEFAULT_LOGO_KANAN,
   namaKepsek: 'Dr. H. Bambang Hartono, M.Pd.',
@@ -101,7 +101,7 @@ export const DEFAULT_SCHOOL_SETTINGS: SchoolSettings = {
   jabatanPanitia: 'Ketua Panitia Ujian',
   ttdPanitia: DEFAULT_TTD_PANITIA,
   ttdPanitiaScale: 100,
-  tanggalKartu: 'Cendekia, 19 September 2026',
+  tanggalKartu: 'Penajam, 19 September 2026',
 };
 
 // Generates an inline SVG dataUrl avatar for dummy students
