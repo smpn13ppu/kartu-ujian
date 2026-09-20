@@ -84,7 +84,7 @@ export const SettingsStep: React.FC<SettingsStepProps> = ({ settings, onChange, 
               type="text"
               value={settings.alamatSekolah || ''}
               onChange={(e) => onChange({ alamatSekolah: e.target.value })}
-              placeholder="Contoh: Jl. Pendidikan No. 45, Kota Cendekia | Telp: (021) 7890123"
+              placeholder="Contoh: Jl. Agatis RT 03, Ds. Bangun Mulya, Kec. Waru, Kab. PPU"
               className="w-full px-3.5 py-2.5 text-sm bg-slate-50/50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all"
             />
           </div>
@@ -215,11 +215,11 @@ export const SettingsStep: React.FC<SettingsStepProps> = ({ settings, onChange, 
             type="text"
             value={settings.tanggalKartu || ''}
             onChange={(e) => onChange({ tanggalKartu: e.target.value })}
-            placeholder="Contoh: Cendekia, 19 September 2026 atau 19 September 2026"
+            placeholder="Contoh: Penajam, 17 Agustus 1945 atau 17 Agustus 1945"
             className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
           />
           <p className="text-[11px] text-slate-500 mt-1">
-            Format bebas, misal: <em>Jakarta, 20 Oktober 2026</em> atau <em>19 September 2026</em>.
+            Format bebas, misal: <em>Penajam, 17 Agustus 1945</em> atau <em>17 Agustus 1945</em>.
           </p>
         </div>
 
@@ -241,7 +241,7 @@ export const SettingsStep: React.FC<SettingsStepProps> = ({ settings, onChange, 
                 type="text"
                 value={settings.namaKepsek}
                 onChange={(e) => onChange({ namaKepsek: e.target.value })}
-                placeholder="Dr. H. Bambang Hartono, M.Pd."
+                placeholder="Muhammad Budi Saputra,S.Kom."
                 className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
             </div>
@@ -552,7 +552,7 @@ export const SettingsStep: React.FC<SettingsStepProps> = ({ settings, onChange, 
                     type="text"
                     value={settings.namaPanitia || ''}
                     onChange={(e) => onChange({ namaPanitia: e.target.value })}
-                    placeholder="Siti Rahmawati, S.Pd."
+                    placeholder="Eko Harsono Putra,S.Kom."
                     className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   />
                 </div>

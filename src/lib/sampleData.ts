@@ -82,10 +82,10 @@ export const DEFAULT_STEMPEL = `data:image/svg+xml;utf8,${encodeURIComponent(`
 export const DEFAULT_SCHOOL_SETTINGS: SchoolSettings = {
   namaSekolah: 'SMP NEGERI 13 PENAJAM PASER UTARA',
   subHeader: 'KARTU PESERTA PENILAIAN AKHIR SEMESTER (PAS) GANJIL\nTAHUN AJARAN 2026/2027',
-  alamatSekolah: 'Jl. Penajam Paser Utara, Kalimantan Timur | NPSN: 30402061',
+  alamatSekolah: 'Jl. Agatis RT 03, Ds. Bangun Mulya, Kec. Waru, Kab. PPU',
   logoKiri: DEFAULT_LOGO_KIRI,
   logoKanan: DEFAULT_LOGO_KANAN,
-  namaKepsek: 'Dr. H. Bambang Hartono, M.Pd.',
+  namaKepsek: 'Muhammad Budi Saputra,S.Kom.',
   nipKepsek: '19750812 199903 1 004',
   jabatanKepsek: 'Kepala Sekolah',
   ttdKepsek: DEFAULT_TTD_KEPSEK,
@@ -96,12 +96,12 @@ export const DEFAULT_SCHOOL_SETTINGS: SchoolSettings = {
   stempelLayerOrder: 'above',
   ttdScale: 100,
   enableTtdPanitia: true,
-  namaPanitia: 'Siti Rahmawati, S.Pd.',
+  namaPanitia: 'Eko Harsono Putra,S.Kom.',
   nipPanitia: '19830415 200801 2 007',
   jabatanPanitia: 'Ketua Panitia Ujian',
   ttdPanitia: DEFAULT_TTD_PANITIA,
   ttdPanitiaScale: 100,
-  tanggalKartu: 'Penajam, 19 September 2026',
+  tanggalKartu: 'Penajam, 17 Agustus 1945',
 };
 
 // Generates an inline SVG dataUrl avatar for dummy students
