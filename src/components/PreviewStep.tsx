@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Student, SchoolSettings, LayoutSettings } from '../types';
 import { PrintSheet } from './PrintSheet';
 import { generateCardsPdf, PdfGenerationProgress } from '../lib/pdfGenerator';
@@ -17,6 +17,8 @@ import {
   FileCheck,
   Image as ImageIcon,
   ImageOff,
+  Share2,
+  Maximize2,
 } from 'lucide-react';
 
 interface PreviewStepProps {
@@ -38,6 +40,7 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
   const [zoomLevel, setZoomLevel] = useState<number>(0.75);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfProgress, setPdfProgress] = useState<PdfGenerationProgress | null>(null);
+  const [canShareFile, setCanShareFile] = useState(false);
 
   // Hidden container holding all sheets for multi-page PDF generation and native printing
   const allSheetsContainerRef = useRef<HTMLDivElement>(null);
@@ -53,7 +56,34 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
 
   const currentSheetStudents = sheetsData[currentPage - 1] || [];
 
-  const handleDownloadPdf = async () => {
+  // Auto-fit zoom level based on screen width on initial load
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const screenWidth = window.innerWidth;
+      if (screenWidth < 640) {
+        // A4 sheet width is ~794px in px (210mm)
+        const fitted = Math.max(0.35, Math.min(0.55, (screenWidth - 48) / 800));
+        setZoomLevel(Number(fitted.toFixed(2)));
+      }
+      if (typeof navigator !== 'undefined' && 'share' in navigator) {
+        setCanShareFile(true);
+      }
+    }
+  }, []);
+
+  const handleFitScreen = () => {
+    if (typeof window !== 'undefined') {
+      const screenWidth = window.innerWidth;
+      if (screenWidth < 640) {
+        const fitted = Math.max(0.35, Math.min(0.55, (screenWidth - 48) / 800));
+        setZoomLevel(Number(fitted.toFixed(2)));
+      } else {
+        setZoomLevel(0.75);
+      }
+    }
+  };
+
+  const handleDownloadPdf = async (triggerShare = false) => {
     if (!allSheetsContainerRef.current) return;
 
     setIsGeneratingPdf(true);
@@ -76,9 +106,25 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
       const dateStr = new Date().toISOString().split('T')[0];
       const fileName = `kartu_ujian_${cleanSchoolName}_${layout.paperSize}_${dateStr}.pdf`;
 
-      await generateCardsPdf(sheetElements, layout.paperSize, fileName, (p) => {
+      const result = await generateCardsPdf(sheetElements, layout.paperSize, fileName, (p) => {
         setPdfProgress(p);
       });
+
+      // If user requested share and navigator.share is available
+      if (triggerShare && typeof navigator !== 'undefined' && navigator.share && result?.blob) {
+        try {
+          const file = new File([result.blob], result.fileName, { type: 'application/pdf' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: `Kartu Ujian - ${settings.namaSekolah}`,
+              text: `Dokumen Kartu Ujian ${students.length} Siswa (${layout.paperSize})`,
+              files: [file],
+            });
+          }
+        } catch (shareErr) {
+          console.log('Share dismissed or not supported:', shareErr);
+        }
+      }
     } catch (err: any) {
       alert(`Gagal membuat PDF: ${err.message || 'Terjadi kesalahan'}`);
     } finally {
@@ -92,79 +138,94 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* 1. Control Toolbar (Sticky) */}
-      <div className="no-print bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 sticky top-20 z-30">
-        {/* Pagination Controls */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            disabled={currentPage <= 1}
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="p-1.5 border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-            title="Lembar Sebelumnya"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
-            <span>Lembar</span>
-            <select
-              value={currentPage}
-              onChange={(e) => setCurrentPage(Number(e.target.value))}
-              className="bg-slate-50 border border-slate-300 rounded-md px-2 py-1 font-mono text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
-              {Array.from({ length: totalSheets }, (_, i) => i + 1).map((num) => (
-                <option key={num} value={num}>
-                  {num}
-                </option>
-              ))}
-            </select>
-            <span className="text-slate-500">dari {totalSheets}</span>
-          </div>
-
-          <button
-            type="button"
-            disabled={currentPage >= totalSheets}
-            onClick={() => setCurrentPage((p) => Math.min(totalSheets, p + 1))}
-            className="p-1.5 border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-            title="Lembar Berikutnya"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-
-          <div className="h-5 w-px bg-slate-200 mx-1 hidden sm:block" />
-
-          {/* Zoom controls */}
-          <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg p-0.5 text-xs hidden sm:flex">
+      <div className="no-print bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3 sticky top-16 sm:top-20 z-30">
+        {/* Pagination & Zoom Controls */}
+        <div className="flex flex-wrap items-center justify-between w-full md:w-auto gap-2">
+          {/* Pagination Controls */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               type="button"
-              onClick={() => setZoomLevel((z) => Math.max(0.4, Number((z - 0.1).toFixed(2))))}
-              className="p-1 text-slate-600 hover:text-slate-900 rounded cursor-pointer"
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="p-2 sm:p-1.5 border border-slate-300 rounded-xl hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors touch-target flex items-center justify-center"
+              title="Lembar Sebelumnya"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-1 text-xs font-semibold text-slate-800">
+              <select
+                value={currentPage}
+                onChange={(e) => setCurrentPage(Number(e.target.value))}
+                className="bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 font-mono text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              >
+                {Array.from({ length: totalSheets }, (_, i) => i + 1).map((num) => (
+                  <option key={num} value={num}>
+                    Hal {num}
+                  </option>
+                ))}
+              </select>
+              <span className="text-slate-500 text-[11px]">/ {totalSheets}</span>
+            </div>
+
+            <button
+              type="button"
+              disabled={currentPage >= totalSheets}
+              onClick={() => setCurrentPage((p) => Math.min(totalSheets, p + 1))}
+              className="p-2 sm:p-1.5 border border-slate-300 rounded-xl hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors touch-target flex items-center justify-center"
+              title="Lembar Berikutnya"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="h-5 w-px bg-slate-200 hidden sm:block" />
+
+          {/* Zoom controls with Fit-to-screen */}
+          <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl p-0.5 text-xs">
+            <button
+              type="button"
+              onClick={() => setZoomLevel((z) => Math.max(0.3, Number((z - 0.05).toFixed(2))))}
+              className="p-1.5 text-slate-600 hover:text-slate-900 rounded cursor-pointer touch-target flex items-center justify-center"
               title="Perkecil Tampilan"
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
-            <span className="font-mono text-[11px] px-1.5 text-slate-600 min-w-10 text-center">
-              {Math.round(zoomLevel * 100)}%
-            </span>
             <button
               type="button"
-              onClick={() => setZoomLevel((z) => Math.min(1.2, Number((z + 0.1).toFixed(2))))}
-              className="p-1 text-slate-600 hover:text-slate-900 rounded cursor-pointer"
+              onClick={handleFitScreen}
+              className="font-mono text-[11px] px-1.5 text-blue-700 hover:underline min-w-10 text-center font-bold cursor-pointer"
+              title="Klik untuk Sesuaikan ke Layar"
+            >
+              {Math.round(zoomLevel * 100)}%
+            </button>
+            <button
+              type="button"
+              onClick={() => setZoomLevel((z) => Math.min(1.2, Number((z + 0.05).toFixed(2))))}
+              className="p-1.5 text-slate-600 hover:text-slate-900 rounded cursor-pointer touch-target flex items-center justify-center"
               title="Perbesar Tampilan"
             >
               <ZoomIn className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleFitScreen}
+              className="p-1.5 text-slate-500 hover:text-blue-600 rounded cursor-pointer hidden xs:flex items-center"
+              title="Pas Layar"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
             </button>
           </div>
 
           {/* Quick Photo Toggle in Toolbar */}
           {onUpdateLayout && (
-            <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs">
+            <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-xs hidden sm:flex">
               <button
                 type="button"
                 onClick={() => onUpdateLayout({ enablePhoto: true })}
-                className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer flex items-center gap-1 ${
                   layout.enablePhoto !== false
                     ? 'bg-white text-blue-700 shadow-xs ring-1 ring-blue-500/20'
                     : 'text-slate-600 hover:text-slate-900'
@@ -172,12 +233,12 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
                 title="Tampilkan bingkai/slot foto peserta"
               >
                 <ImageIcon className="w-3.5 h-3.5" />
-                <span className="hidden lg:inline">Dengan Foto</span>
+                <span className="hidden lg:inline">Foto</span>
               </button>
               <button
                 type="button"
                 onClick={() => onUpdateLayout({ enablePhoto: false })}
-                className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer flex items-center gap-1 ${
                   layout.enablePhoto === false
                     ? 'bg-white text-emerald-700 shadow-xs ring-1 ring-emerald-500/20'
                     : 'text-slate-600 hover:text-slate-900'
@@ -191,25 +252,39 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
           )}
         </div>
 
-        {/* Action Buttons: Print & Download PDF */}
-        <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
+        {/* Action Buttons: Print & Download / Share PDF (Desktop header view) */}
+        <div className="hidden md:flex items-center gap-2.5 justify-end">
           {/* Native Print button */}
           <button
             type="button"
             onClick={handlePrint}
-            className="flex-1 md:flex-initial px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm rounded-xl border border-slate-300 flex items-center justify-center gap-2 cursor-pointer transition-colors"
+            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-800 font-bold text-xs sm:text-sm rounded-xl border border-slate-300 flex items-center justify-center gap-2 cursor-pointer transition-colors"
             title="Cetak langsung menggunakan dialog print browser (Ctrl + P)"
           >
             <Printer className="w-4 h-4 text-slate-700" />
             <span>Cetak Langsung</span>
           </button>
 
+          {/* Share PDF button on mobile/supporting browsers */}
+          {canShareFile && (
+            <button
+              type="button"
+              disabled={isGeneratingPdf}
+              onClick={() => handleDownloadPdf(true)}
+              className="px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 text-indigo-700 border border-indigo-200 font-bold text-xs sm:text-sm rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors"
+              title="Bagikan PDF ke WhatsApp, Drive, atau aplikasi lain"
+            >
+              <Share2 className="w-4 h-4 text-indigo-600" />
+              <span>Bagikan</span>
+            </button>
+          )}
+
           {/* Download PDF button */}
           <button
             type="button"
             disabled={isGeneratingPdf}
-            onClick={handleDownloadPdf}
-            className="flex-1 md:flex-initial px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 cursor-pointer transition-all"
+            onClick={() => handleDownloadPdf(false)}
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 cursor-pointer transition-all"
           >
             {isGeneratingPdf ? (
               <>
@@ -219,7 +294,7 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
             ) : (
               <>
                 <Download className="w-4 h-4" />
-                <span>Unduh File PDF</span>
+                <span>Unduh PDF</span>
               </>
             )}
           </button>
@@ -227,12 +302,13 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
       </div>
 
       {/* 2. Visual Screen Preview of Current Sheet */}
-      <div className="no-print bg-slate-200/80 rounded-2xl p-4 sm:p-8 overflow-auto flex justify-center items-start min-h-[600px] border border-slate-300/80 shadow-inner">
+      <div className="no-print bg-slate-200/80 rounded-2xl p-2 sm:p-6 overflow-x-auto overflow-y-hidden flex justify-center items-start min-h-[520px] sm:min-h-[600px] border border-slate-300/80 shadow-inner">
         <div
           style={{
             transform: `scale(${zoomLevel})`,
             transformOrigin: 'top center',
             transition: 'transform 0.15s ease-out',
+            marginBottom: `calc((1 - ${zoomLevel}) * -500px)`,
           }}
         >
           <PrintSheet
@@ -246,7 +322,6 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
       </div>
 
       {/* 3. Offscreen Full Container (For generating high-res PDF & Native Printing) */}
-      {/* On screen, this is hidden from view; on @media print, it is shown as the full multi-page document! */}
       <div
         ref={allSheetsContainerRef}
         className="print-only hidden print:block"
@@ -318,20 +393,62 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({
         </div>
       )}
 
-      {/* Bottom navigation */}
-      <div className="no-print flex items-center justify-between pt-2">
-        <button
-          type="button"
-          onClick={onBack}
-          className="px-5 py-2.5 border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold text-sm rounded-xl flex items-center gap-2 cursor-pointer transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Kembali ke Pengaturan Layout
-        </button>
+      {/* 5. Navigation & Action Buttons (Sticky on mobile, inline on desktop) */}
+      <div className="fixed sm:static bottom-0 left-0 right-0 p-3 sm:p-0 bg-white/95 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none border-t sm:border-t-0 border-slate-200 z-30 safe-bottom">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className="px-3.5 sm:px-5 py-3 sm:py-2.5 border border-slate-300 hover:bg-slate-100 active:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm rounded-xl flex items-center gap-1.5 sm:gap-2 cursor-pointer transition-colors touch-target flex-shrink-0"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden xs:inline">Kembali</span>
+          </button>
 
-        <div className="text-xs text-slate-500 font-medium">
-          Total: <strong className="text-slate-800">{students.length}</strong> kartu dalam{' '}
-          <strong className="text-slate-800">{totalSheets}</strong> lembar ({layout.paperSize})
+          <div className="flex items-center gap-2 flex-1 sm:flex-initial justify-end">
+            {/* Mobile Print Button */}
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="md:hidden p-3 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-800 font-bold text-xs rounded-xl border border-slate-300 flex items-center justify-center cursor-pointer transition-colors touch-target"
+              title="Cetak Langsung"
+            >
+              <Printer className="w-4 h-4 text-slate-700" />
+            </button>
+
+            {/* Mobile Share Button */}
+            {canShareFile && (
+              <button
+                type="button"
+                disabled={isGeneratingPdf}
+                onClick={() => handleDownloadPdf(true)}
+                className="md:hidden p-3 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 text-indigo-700 border border-indigo-200 font-bold text-xs rounded-xl flex items-center justify-center cursor-pointer transition-colors touch-target"
+                title="Bagikan File PDF"
+              >
+                <Share2 className="w-4 h-4 text-indigo-600" />
+              </button>
+            )}
+
+            {/* Download PDF button (Main Action) */}
+            <button
+              type="button"
+              disabled={isGeneratingPdf}
+              onClick={() => handleDownloadPdf(false)}
+              className="flex-1 sm:flex-initial px-4 sm:px-6 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg sm:shadow-md shadow-blue-500/25 flex items-center justify-center gap-2 cursor-pointer transition-all touch-target"
+            >
+              {isGeneratingPdf ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Membuat PDF...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  <span>Unduh File PDF</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

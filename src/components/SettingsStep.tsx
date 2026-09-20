@@ -662,16 +662,18 @@ export const SettingsStep: React.FC<SettingsStepProps> = ({ settings, onChange, 
         </div>
       </div>
 
-      {/* Action navigation */}
-      <div className="flex justify-end pt-2">
-        <button
-          type="button"
-          onClick={onNext}
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-md shadow-blue-500/20 flex items-center gap-2 cursor-pointer transition-all hover:gap-3"
-        >
-          Lanjut ke Upload Data Peserta
-          <ArrowRight className="w-4 h-4" />
-        </button>
+      {/* Action navigation (Sticky on mobile, inline on desktop) */}
+      <div className="fixed sm:static bottom-0 left-0 right-0 p-3 sm:p-0 bg-white/95 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none border-t sm:border-t-0 border-slate-200 z-30 safe-bottom">
+        <div className="max-w-7xl mx-auto flex justify-end">
+          <button
+            type="button"
+            onClick={onNext}
+            className="w-full sm:w-auto px-6 py-3.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-sm sm:text-base rounded-xl shadow-lg sm:shadow-md shadow-blue-500/25 flex items-center justify-center gap-2 cursor-pointer transition-all touch-target"
+          >
+            <span>Lanjut ke Data Peserta</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -13,7 +13,52 @@
     color: #0f172a;
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
   }
+
+  /* Prevent iOS Safari automatic zoom on focus while preserving accessibility */
+  @media (max-width: 639px) {
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+}
+
+/* Safe Area Inset Helpers for iPhone Notch / Dynamic Island / Home Indicator */
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.safe-top {
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.momentum-scroll {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* Smooth Native App Step Transition */
+@keyframes stepFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.step-transition {
+  animation: stepFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Realistic Paper Shadows for Screen Preview */
@@ -51,7 +96,8 @@
   header,
   nav,
   aside,
-  footer {
+  footer,
+  .mobile-bottom-bar {
     display: none !important;
   }
 

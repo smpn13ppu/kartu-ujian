@@ -14,7 +14,7 @@ export async function generateCardsPdf(
   paperSize: PaperSize,
   fileName: string,
   onProgress?: (progress: PdfGenerationProgress) => void
-): Promise<void> {
+): Promise<{ blob: Blob; fileName: string }> {
   const totalSheets = sheetElements.length;
   if (totalSheets === 0) {
     throw new Error('Tidak ada halaman untuk dicetak.');
@@ -69,6 +69,7 @@ export async function generateCardsPdf(
 
   // Ensure fileName ends with .pdf
   const safePdfName = fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`;
+  const blob = new Blob([pdf.output('blob')], { type: 'application/pdf' });
 
   // 1. Send to server to write to project folder and get reliable download headers
   try {
@@ -91,7 +92,7 @@ export async function generateCardsPdf(
         setTimeout(() => {
           if (link.parentNode) link.parentNode.removeChild(link);
         }, 1000);
-        return;
+        return { blob, fileName: safePdfName };
       }
     }
   } catch (err) {
@@ -99,7 +100,6 @@ export async function generateCardsPdf(
   }
 
   // Fallback: Direct client-side blob download with explicit MIME type & appended link
-  const blob = new Blob([pdf.output('blob')], { type: 'application/pdf' });
   const blobUrl = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = blobUrl;
@@ -111,4 +111,6 @@ export async function generateCardsPdf(
     if (link.parentNode) link.parentNode.removeChild(link);
     URL.revokeObjectURL(blobUrl);
   }, 2000);
+
+  return { blob, fileName: safePdfName };
 }

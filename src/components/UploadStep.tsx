@@ -355,25 +355,27 @@ export const UploadStep: React.FC<UploadStepProps> = ({
         </div>
       )}
 
-      {/* 3. Student Preview Table */}
+      {/* 3. Student Preview (Mobile Cards + Desktop Table) */}
       {students.length > 0 ? (
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-          {/* Table Header & Controls */}
-          <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70">
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-slate-900">Daftar Siswa Terdeteksi</h3>
-              <span className="text-xs bg-slate-200 font-mono font-semibold text-slate-700 px-2 py-0.5 rounded-full">
-                {students.length} siswa
-              </span>
+          {/* Header & Controls */}
+          <div className="p-4 border-b border-slate-200 flex flex-col gap-3 bg-slate-50/70">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-900">Daftar Siswa Terdeteksi</h3>
+                <span className="text-xs bg-slate-200 font-mono font-semibold text-slate-700 px-2 py-0.5 rounded-full">
+                  {students.length} siswa
+                </span>
+              </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               {/* Filter by photo */}
-              <div className="flex items-center bg-white border border-slate-300 rounded-lg p-0.5 text-xs">
+              <div className="flex items-center bg-white border border-slate-300 rounded-xl p-1 text-xs overflow-x-auto">
                 <button
                   type="button"
                   onClick={() => setPhotoFilter('all')}
-                  className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
+                  className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer text-center whitespace-nowrap touch-target ${
                     photoFilter === 'all'
                       ? 'bg-blue-600 text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
@@ -384,43 +386,102 @@ export const UploadStep: React.FC<UploadStepProps> = ({
                 <button
                   type="button"
                   onClick={() => setPhotoFilter('withPhoto')}
-                  className={`px-2.5 py-1 rounded-md font-medium transition-colors flex items-center gap-1 ${
+                  className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap touch-target ${
                     photoFilter === 'withPhoto'
                       ? 'bg-emerald-600 text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <UserCheck className="w-3 h-3" /> Ada Foto ({withPhotoCount})
+                  <UserCheck className="w-3.5 h-3.5" /> Ada ({withPhotoCount})
                 </button>
                 <button
                   type="button"
                   onClick={() => setPhotoFilter('withoutPhoto')}
-                  className={`px-2.5 py-1 rounded-md font-medium transition-colors flex items-center gap-1 ${
+                  className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap touch-target ${
                     photoFilter === 'withoutPhoto'
                       ? 'bg-amber-600 text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <UserX className="w-3 h-3" /> Tanpa Foto ({withoutPhotoCount})
+                  <UserX className="w-3.5 h-3.5" /> Tanpa ({withoutPhotoCount})
                 </button>
               </div>
 
               {/* Search Box */}
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <div className="relative w-full sm:w-64">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Cari nama / NISN..."
+                  placeholder="Cari nama, NISN, kelas..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none w-44 sm:w-56"
+                  className="w-full pl-9 pr-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
             </div>
           </div>
 
-          {/* Table Body */}
-          <div className="overflow-x-auto max-h-[420px]">
+          {/* Mobile Student Cards (< 640px) */}
+          <div className="block sm:hidden divide-y divide-slate-100 max-h-[480px] overflow-y-auto p-2 space-y-2">
+            {filteredStudents.length === 0 ? (
+              <div className="py-8 text-center text-slate-400 text-xs">
+                Tidak ada data siswa yang cocok dengan filter / pencarian.
+              </div>
+            ) : (
+              filteredStudents.map((std, index) => (
+                <div
+                  key={std.id}
+                  className="p-3 bg-slate-50/70 hover:bg-slate-100/80 rounded-xl border border-slate-200/80 flex items-start gap-3 transition-colors"
+                >
+                  {/* Photo / Avatar */}
+                  <div className="w-12 h-14 rounded-lg border border-slate-200 bg-white overflow-hidden flex items-center justify-center flex-shrink-0 shadow-xs">
+                    {std.fotoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={std.fotoUrl}
+                        alt={std.nama}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <ImageIcon className="w-5 h-5 text-slate-300" />
+                    )}
+                  </div>
+
+                  {/* Student Details */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[11px] font-mono font-bold text-blue-700">
+                        {std.nisn}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-mono">
+                        #{index + 1}
+                      </span>
+                    </div>
+                    <h4 className="text-xs font-bold text-slate-900 uppercase truncate mt-0.5">
+                      {std.nama}
+                    </h4>
+
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                        Kelas {std.kelas}
+                      </span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        {std.ruangan}
+                      </span>
+                      {std.nomorPeserta && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono text-slate-600 bg-slate-100 border border-slate-200">
+                          {std.nomorPeserta}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Desktop Table (>= 640px) */}
+          <div className="hidden sm:block overflow-x-auto max-h-[420px]">
             <table className="w-full text-left text-xs border-collapse">
               <thead className="bg-slate-100 text-slate-600 uppercase font-bold text-[10px] tracking-wider sticky top-0 z-10">
                 <tr>
@@ -487,35 +548,37 @@ export const UploadStep: React.FC<UploadStepProps> = ({
           <FileSpreadsheet className="w-10 h-10 text-slate-300 mx-auto mb-2" />
           <h4 className="text-sm font-bold text-slate-700">Belum Ada Data Peserta</h4>
           <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 mb-4">
-            Upload file Excel data siswa untuk memproses kartu ujian, atau klik tombol di bawah untuk mencoba dengan data sampel.
+            Upload file Excel data siswa untuk memproses kartu ujian, atau klik tombol di header untuk mencoba dengan data sampel.
           </p>
         </div>
       )}
 
-      {/* Navigation Buttons */}
-      <div className="flex items-center justify-between pt-2">
-        <button
-          type="button"
-          onClick={onBack}
-          className="px-5 py-2.5 border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold text-sm rounded-xl flex items-center gap-2 cursor-pointer transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Kembali ke Pengaturan
-        </button>
+      {/* Navigation Buttons (Sticky on mobile, inline on desktop) */}
+      <div className="fixed sm:static bottom-0 left-0 right-0 p-3 sm:p-0 bg-white/95 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none border-t sm:border-t-0 border-slate-200 z-30 safe-bottom">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className="px-4 sm:px-5 py-3 sm:py-2.5 border border-slate-300 hover:bg-slate-100 active:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm rounded-xl flex items-center gap-1.5 sm:gap-2 cursor-pointer transition-colors touch-target"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden xs:inline">Kembali ke </span>Pengaturan
+          </button>
 
-        <button
-          type="button"
-          disabled={students.length === 0}
-          onClick={onNext}
-          className={`px-6 py-3 font-bold text-sm rounded-xl shadow-md flex items-center gap-2 cursor-pointer transition-all ${
-            students.length > 0
-              ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20 hover:gap-3'
-              : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
-          }`}
-        >
-          Lanjut ke Pengaturan Layout
-          <ArrowRight className="w-4 h-4" />
-        </button>
+          <button
+            type="button"
+            disabled={students.length === 0}
+            onClick={onNext}
+            className={`px-5 sm:px-6 py-3 sm:py-3 font-bold text-xs sm:text-sm rounded-xl shadow-md flex items-center gap-1.5 sm:gap-2 cursor-pointer transition-all touch-target ${
+              students.length > 0
+                ? 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-blue-500/20'
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+            }`}
+          >
+            <span>Lanjut ke Layout Cetak</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

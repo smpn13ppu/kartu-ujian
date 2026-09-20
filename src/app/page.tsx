@@ -121,7 +121,7 @@ export default function HomePage() {
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 pb-24 sm:pb-8">
         {/* Step Indicator */}
         <StepNavigation
           currentStep={currentStep}
@@ -130,49 +130,51 @@ export default function HomePage() {
         />
 
         {/* Dynamic Step Content */}
-        {currentStep === 1 && (
-          <SettingsStep
-            settings={settings}
-            onChange={updateSettings}
-            onNext={() => setCurrentStep(2)}
-          />
-        )}
+        <div className="step-transition">
+          {currentStep === 1 && (
+            <SettingsStep
+              settings={settings}
+              onChange={updateSettings}
+              onNext={() => setCurrentStep(2)}
+            />
+          )}
 
-        {currentStep === 2 && (
-          <UploadStep
-            students={students}
-            validation={validation}
-            onDataLoaded={(newStudents, newValidation) => {
-              setStudents(newStudents);
-              setValidation(newValidation);
-            }}
-            onPhotosUpdated={(updatedStudents) => {
-              setStudents(updatedStudents);
-            }}
-            onBack={() => setCurrentStep(1)}
-            onNext={() => setCurrentStep(3)}
-          />
-        )}
+          {currentStep === 2 && (
+            <UploadStep
+              students={students}
+              validation={validation}
+              onDataLoaded={(newStudents, newValidation) => {
+                setStudents(newStudents);
+                setValidation(newValidation);
+              }}
+              onPhotosUpdated={(updatedStudents) => {
+                setStudents(updatedStudents);
+              }}
+              onBack={() => setCurrentStep(1)}
+              onNext={() => setCurrentStep(3)}
+            />
+          )}
 
-        {currentStep === 3 && (
-          <LayoutStep
-            layout={layout}
-            totalStudents={students.length}
-            onChange={updateLayout}
-            onBack={() => setCurrentStep(2)}
-            onNext={() => setCurrentStep(4)}
-          />
-        )}
+          {currentStep === 3 && (
+            <LayoutStep
+              layout={layout}
+              totalStudents={students.length}
+              onChange={updateLayout}
+              onBack={() => setCurrentStep(2)}
+              onNext={() => setCurrentStep(4)}
+            />
+          )}
 
-        {currentStep === 4 && (
-          <PreviewStep
-            students={students}
-            settings={settings}
-            layout={layout}
-            onUpdateLayout={updateLayout}
-            onBack={() => setCurrentStep(3)}
-          />
-        )}
+          {currentStep === 4 && (
+            <PreviewStep
+              students={students}
+              settings={settings}
+              layout={layout}
+              onUpdateLayout={updateLayout}
+              onBack={() => setCurrentStep(3)}
+            />
+          )}
+        </div>
       </main>
 
       {/* Footer */}

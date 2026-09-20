@@ -281,25 +281,27 @@ export const LayoutStep: React.FC<LayoutStepProps> = ({
         </div>
       </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex items-center justify-between pt-2">
-        <button
-          type="button"
-          onClick={onBack}
-          className="px-5 py-2.5 border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold text-sm rounded-xl flex items-center gap-2 cursor-pointer transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Kembali ke Data Peserta
-        </button>
+      {/* Navigation Buttons (Sticky on mobile, inline on desktop) */}
+      <div className="fixed sm:static bottom-0 left-0 right-0 p-3 sm:p-0 bg-white/95 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none border-t sm:border-t-0 border-slate-200 z-30 safe-bottom">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className="px-4 sm:px-5 py-3 sm:py-2.5 border border-slate-300 hover:bg-slate-100 active:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm rounded-xl flex items-center gap-1.5 sm:gap-2 cursor-pointer transition-colors touch-target"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden xs:inline">Kembali ke </span>Data Siswa
+          </button>
 
-        <button
-          type="button"
-          onClick={onNext}
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-md shadow-blue-500/20 flex items-center gap-2 cursor-pointer transition-all hover:gap-3"
-        >
-          Lanjut ke Preview Lembar Cetak
-          <ArrowRight className="w-4 h-4" />
-        </button>
+          <button
+            type="button"
+            onClick={onNext}
+            className="px-5 sm:px-6 py-3 sm:py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-blue-500/20 flex items-center gap-1.5 sm:gap-2 cursor-pointer transition-all touch-target"
+          >
+            <span>Lanjut ke Preview Cetak</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );
